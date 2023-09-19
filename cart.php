@@ -1,10 +1,11 @@
-<<<<<<< HEAD
-=======
-<?php 
+<?php
     $conn = mysqli_connect('localhost', 'root', '', 'watch-shop') or die('Couldn\'t connect to Database');
 
     $error = array();
     session_start();
+    $sanpham_giohang = array();
+    $sum = 0;
+    $count = 0;
 
     if(isset($_SESSION['user_logged'])) {
         $user = $_SESSION['user_logged'];
@@ -12,11 +13,53 @@
         include('./libraries/helper.php');
 
         $cart = sumCart($conn, $user['id']);
-    }
 
+        $sql = "SELECT san_pham.id, san_pham.ten_sp, san_pham.hinh_anh, san_pham.don_gia_ban, gio_hang.so_luong, SUM(gio_hang.so_luong * san_pham.don_gia_ban) AS tri_gia 
+                FROM gio_hang, san_pham 
+                WHERE gio_hang.id_san_pham = san_pham.id AND gio_hang.id_khach_hang = {$user['id']}
+                GROUP BY san_pham.id";
+        
+        $query = mysqli_query($conn, $sql);
+        while($row = mysqli_fetch_assoc($query)) {
+            $sanpham_giohang[] = $row;
+            $sum += $row['tri_gia'];
+        }
+
+        $count = count($sanpham_giohang);
+
+        
+
+        // Cập nhật giỏ hàng
+        if(isset($_POST['submit']) && $_POST['submit'] == 'submit') {
+            $id = isset($_POST['id_san_pham']) ? $_POST['id_san_pham'] : ' ';
+            $soluong = isset($_POST['so_luong']) ? $_POST['so_luong'] : ' ';
+
+            if(empty($soluong)) {
+                $error['soluong'] = 'Lỗi, mảng rỗng';
+            }
+
+            if(empty($id)) {
+                $error['id'] = 'Lỗi, mảng rỗng';
+            }
+
+            if(!($error)) {
+                for($i = 0; $i < count($id); $i++) {
+                    $sql = "UPDATE `gio_hang` SET `so_luong`='{$soluong[$i]}' WHERE `id_khach_hang`={$user['id']} AND `id_san_pham`={$id[$i]}";
+                    $query = mysqli_query($conn, $sql);
+
+                }
+
+                if($query) {
+                    echo "<script>
+                            alert('Cập nhật giỏ hàng thành công!');
+                            window.location.href = 'cart.php';
+                        </script>";
+                }
+            }
+        }
+    }
 ?>
 
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
 <!DOCTYPE html>
 <html lang="en">
 
@@ -28,11 +71,7 @@
         <meta content="Free HTML Templates" name="description">
     
         <!-- Favicon -->
-<<<<<<< HEAD
-        <link href="img/favicon.ico" rel="icon">
-=======
         <link href="./assets/img/favicon.ico" rel="icon">
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
     
         <!-- Google Web Fonts -->
         <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -42,22 +81,13 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
         
         <!-- Libraries Stylesheet -->
-<<<<<<< HEAD
-        <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-=======
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
         <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
         <link rel="stylesheet" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
     
         
         <!-- Customized Bootstrap Stylesheet -->
-<<<<<<< HEAD
-        <link href="css/style.css" rel="stylesheet">
-=======
         <link href="./assets/css/style.css" rel="stylesheet">
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
     </head>
-
 <body>
     <header id="header">
         <!-- Topbar Start -->
@@ -106,15 +136,9 @@
                         </a>
                     </div>
                     <div class="col-lg-6 col-6 text-left search-inner">
-<<<<<<< HEAD
-                        <form action="" class="w-100 position-relative">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search for products">
-=======
                         <form method="POST" action="shop.php" class="form-search w-100 position-relative">
                             <div class="input-group">
                                 <input type="search" class="form-control" name="search" placeholder="Tìm kiếm tên sản phẩm...">
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
                                 <div class="input-group-append">
                                     <span class="input-group-text bg-primary text-light">
                                         <i class="fa fa-search"></i>
@@ -122,40 +146,16 @@
                                 </div>
 
                                 <div class="search-history w-100 bg-light mt-2 rounded">
-<<<<<<< HEAD
-                                    <h5 class="p-3">
-                                        Search history
-                                    </h5>
-                                    <ul class="list-group">
-                                        <li class="list-group-item">Cras justo odio</li>
-                                        <li class="list-group-item">Dapibus ac facilisis in</li>
-                                        <li class="list-group-item">Morbi leo risus</li>
-                                        <li class="list-group-item">Porta ac consectetur ac</li>
-                                        <li class="list-group-item">Vestibulum at eros</li>
-                                      </ul>
-=======
                                     
                                     <ul class="search-history-list list-group">
                                         
                                     </ul>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
 
                                     <a href="" class="btn text-center w-100 p-2 btn-show-all">All</a>
                                 </div>
                             </div>
                         </form>
                     </div>
-<<<<<<< HEAD
-                    <div class="col-lg-3 col-6 text-right">
-                        <a href="" class="btn" style="font-size: 20px">
-                            <i class="fas fa-heart text-primary"></i>
-                            <span class="badge text-light">0</span>
-                        </a>
-                        <a href="" class="btn" style="font-size: 20px">
-                            <i class="fas fa-shopping-cart text-primary"></i>
-                            <span class="badge sum-cart text-light">0</span>
-                        </a>
-=======
                     <div class="col-lg-3 col-12 d-flex align-items-center justify-content-lg-end justify-content-sm-between">
                         <a href="./cart.php" class="btn" style="font-size: 20px">
                             <i class="fas fa-shopping-cart text-primary"></i>
@@ -185,7 +185,6 @@
                                 <span class="badge text-light">Đăng nhập</span>
                             </a>
                         <?php } ?>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
                     </div>
                 </div>
             </div>
@@ -206,19 +205,10 @@
                             </button>
                             <div class="collapse navbar-collapse" id="navbarCollapse">
                                 <div class="navbar-nav mr-auto py-0 w-100 d-flex justify-content-center">
-<<<<<<< HEAD
-                                    <a href="index.html" class="nav-item nav-link position-relative text-uppercase mx-4">Home</a>
-                                    <a href="shop.html" class="nav-item nav-link position-relative text-uppercase  mx-4">Shop</a>
-                                    <a href="detail.html" class="nav-item nav-link position-relative text-uppercase  mx-4">Shop Detail</a>
-                                    <a href="cart.html" class="nav-item nav-link position-relative text-uppercase  mx-4">Shopping Cart</a>
-                                    <a href="checkout.html" class="nav-item nav-link position-relative text-uppercase  mx-4">Checkout</a>
-                                    <a href="contact.html" class="nav-item nav-link position-relative text-uppercase  mx-4 active">Contact</a>
-=======
                                     <a href="index.php" class="nav-item nav-link position-relative text-uppercase mx-4">Trang chủ</a>
                                     <a href="shop.php" class="nav-item nav-link position-relative text-uppercase  mx-4">Sản Phẩm</a>
-                                    <a href="cart.php" class="nav-item nav-link position-relative text-uppercase  mx-4">Giỏ hàng</a>
-                                    <a href="contact.php" class="nav-item nav-link position-relative text-uppercase  mx-4 active">Liên hệ</a>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
+                                    <a href="cart.php" class="nav-item nav-link position-relative text-uppercase  mx-4 active">Giỏ hàng</a>
+                                    <a href="contact.php" class="nav-item nav-link position-relative text-uppercase  mx-4">Liên hệ</a>
                                 </div>
                             </div>
                         </nav>
@@ -233,78 +223,104 @@
     <!-- Page Header Start -->
     <div class="container-fluid bg-gray-200 mb-5">
         <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
-            <h1 class="font-weight-semi-bold text-uppercase mb-3">Contact Us</h1>
+            <h1 class="font-weight-semi-bold text-uppercase mb-3">Giỏ hàng</h1>
             <div class="d-inline-flex">
-<<<<<<< HEAD
-                <p class="m-0"><a href="">Home</a></p>
-=======
                 <p class="m-0"><a href="">Trang chủ</a></p>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
                 <p class="m-0 px-2">-</p>
-                <p class="m-0">Contact</p>
+                <p class="m-0">Giỏ hàng</p>
             </div>
         </div>
     </div>
     <!-- Page Header End -->
 
 
-    <!-- Contact Start -->
+    <!-- Cart Start -->
     <div class="container-fluid pt-5">
-        <div class="text-center mb-4">
-            <h2 class="section-title px-5"><span class="px-2">Contact For Any Queries</span></h2>
-        </div>
         <div class="row px-xl-5">
-            <div class="col-lg-7 mb-5">
-                <div class="contact-form">
-                    <div id="success"></div>
-                    <form name="sentMessage" id="contactForm" novalidate="novalidate">
-                        <div class="control-group">
-                            <input type="text" class="form-control" id="name" placeholder="Your Name"
-                                required="required" data-validation-required-message="Please enter your name" />
-                            <p class="help-block text-danger"></p>
-                        </div>
-                        <div class="control-group">
-                            <input type="email" class="form-control" id="email" placeholder="Your Email"
-                                required="required" data-validation-required-message="Please enter your email" />
-                            <p class="help-block text-danger"></p>
-                        </div>
-                        <div class="control-group">
-                            <input type="text" class="form-control" id="subject" placeholder="Subject"
-                                required="required" data-validation-required-message="Please enter a subject" />
-                            <p class="help-block text-danger"></p>
-                        </div>
-                        <div class="control-group">
-                            <textarea class="form-control" rows="6" id="message" placeholder="Message"
-                                required="required"
-                                data-validation-required-message="Please enter your message"></textarea>
-                            <p class="help-block text-danger"></p>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary py-2 px-4" type="submit" id="sendMessageButton">Send
-                                Message</button>
-                        </div>
-                    </form>
-                </div>
+            <div class="col-lg-8 table-responsive mb-5">
+                <table id="table-cart" class="table table-striped table-bordered text-center mb-0 display">
+                    <thead class="bg-gray-200 text-dark">
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Đơn giá</th>
+                            <th>Số lượng</th>
+                            <th>Trị giá</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="align-middle">
+                        <?php foreach ($sanpham_giohang as $item) { 
+                            $newArrImg = explode("||", $item['hinh_anh']);
+                        ?>
+                            <tr>
+                                <td class="align-middle">1</td>
+                                <td class="align-middle">
+                                    <img src="./storage/uploads/<?=$newArrImg[0]?>" alt="" style="width: 50px;">
+                                    <?=$item['ten_sp']?>
+                                </td>
+                                <td class="align-middle"><?=$item['don_gia_ban'] . " VND"?></td>
+                                <td class="align-middle">
+                                    <div class="input-group quantity mx-auto" style="width: 100px;">
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-sm btn-primary btn-minus" >
+                                            <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="text" id="soluong" name="so_luong[]" form="update-cart" class="form-control form-control-sm bg-gray-200 text-center" value="<?=$item['so_luong']?>">
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-sm btn-primary btn-plus">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="id_san_pham[]" form="update-cart" value="<?=$item['id']?>">
+                                </td>
+                                <td class="align-middle"><?=$item['tri_gia']?> VND</td>
+                                <td class="align-middle"><a href="./delete-cart.php?id=<?=$item['id']?>" class="btn-delete-cart btn btn-sm btn-primary" > <i class="fa fa-times"></i></a></td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
+                <a href="./shop.php" class="btn btn-primary"><i class="fa-solid fa-arrow-left mr-2"></i> TIẾP TỤC MUA SẮM</a>
+                <button type="submit" name="submit" value="submit" form="update-cart" class="btn-update-cart btn btn-primary">CẬP NHẬT GIỎ HÀNG</button>
+                <form id="update-cart" action="" method="POST"></form>
             </div>
-            <div class="col-lg-5 mb-5">
-                <h5 class="font-weight-semi-bold mb-3">Get In Touch</h5>
-                <p>Justo sed diam ut sed amet duo amet lorem amet stet sea ipsum, sed duo amet et. Est elitr dolor elitr erat sit sit. Dolor diam et erat clita ipsum justo sed.</p>
-                <div class="d-flex flex-column mb-3">
-                    <h5 class="font-weight-semi-bold mb-3">Store 1</h5>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
-                </div>
-                <div class="d-flex flex-column">
-                    <h5 class="font-weight-semi-bold mb-3">Store 2</h5>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                    <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
-                    <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
+            <div class="col-lg-4">
+                <form class="mb-5" action="">
+                    <div class="input-group">
+                        <input type="text" class="form-control p-4" placeholder="Mã giảm giá">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary">Mã giảm giá</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="card border-secondary mb-5">
+                    <div class="card-header bg-gray-200 border-0">
+                        <h4 class="font-weight-semi-bold m-0">Tổng tiền</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3 pt-1">
+                            <h6 class="font-weight-medium">Tổng số tiền (<?=$count?> sản phẩm) </h6>
+                            <h6 class="subtotal-cart font-weight-medium"><?php echo $sum ?> VND</h6>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <h6 class="font-weight-medium">Phí vận chuyển</h6>
+                            <h6 class="font-weight-medium">30000 VND</h6>
+                        </div>
+                    </div>
+                    <div class="card-footer border-secondary bg-transparent">
+                        <div class="d-flex justify-content-between mt-2">
+                            <h5 class="font-weight-bold">Tổng cộng</h5>
+                            <h5 class="total-cart font-weight-bold"><?php echo $sum + 30000 ?> VND</h5>
+                        </div>
+                        <a href="./checkout.php" class="btn-proceed-ckeckout btn btn-block btn-primary my-3 py-3">Đặt hàng</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Contact End -->
+    <!-- Cart End -->
 
 
     <!-- Footer Start -->
@@ -316,44 +332,13 @@
                         <h2 class="mb-4 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border border-white px-3 mr-1">WATCH</span><span class="text-light">SHOP</span></h2>
                     </a>
                     <p>Dolore erat dolor sit lorem vero amet. Sed sit lorem magna, ipsum no sit erat lorem et magna ipsum dolore amet erat.</p>
-<<<<<<< HEAD
-                    <p class="mb-2"><i class="fa fa-map-marker-alt text-light mr-3"></i>123 Street, New York, USA</p>
-                    <p class="mb-2"><i class="fa fa-envelope text-light mr-3"></i>info@example.com</p>
-                    <p class="mb-0"><i class="fa fa-phone-alt text-light mr-3"></i>+012 345 67890</p>
-=======
                     <p class="mb-2"><i class="fa fa-map-marker-alt text-light mr-3"></i>CMT8, Ninh kiều, Cần Thơ</p>
                     <p class="mb-2"><i class="fa fa-envelope text-light mr-3"></i>example@gmail.com</p>
                     <p class="mb-0"><i class="fa fa-phone-alt text-light mr-3"></i>029.382.323</p>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
                 </div>
                 <div class="col-lg-8 col-md-12">
                     <div class="row">
                         <div class="col-md-4 mb-5">
-<<<<<<< HEAD
-                            <h5 class="font-weight-bold text-light mb-4">Quick Links</h5>
-                            <div class="d-flex flex-column justify-content-start">
-                                <a class="text-light mb-2" href="index.html"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                                <a class="text-light mb-2" href="shop.html"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                                <a class="text-light mb-2" href="detail.html"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                                <a class="text-light mb-2" href="cart.html"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                                <a class="text-light mb-2" href="checkout.html"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                                <a class="text-light" href="contact.html"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-5">
-                            <h5 class="font-weight-bold text-light mb-4">Quick Links</h5>
-                            <div class="d-flex flex-column justify-content-start">
-                                <a class="text-light mb-2" href="index.html"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                                <a class="text-light mb-2" href="shop.html"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                                <a class="text-light mb-2" href="detail.html"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                                <a class="text-light mb-2" href="cart.html"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                                <a class="text-light mb-2" href="checkout.html"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                                <a class="text-light" href="contact.html"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-5">
-                            <h5 class="font-weight-bold text-light mb-4">Newsletter</h5>
-=======
                             <h5 class="font-weight-bold text-light mb-4">Liên kết</h5>
                             <div class="d-flex flex-column justify-content-start">
                                 <a class="text-light mb-2" href="index.php"><i class="fa fa-angle-right mr-2"></i>Trang chủ</a>
@@ -373,7 +358,6 @@
                         </div>
                         <div class="col-md-4 mb-5">
                             <h5 class="font-weight-bold text-light mb-4">Ưu đãi</h5>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
                             <form action="">
                                 <div class="form-group">
                                     <input type="text" class="form-control border-0 py-4" placeholder="Your Name" required="required" />
@@ -383,11 +367,7 @@
                                         required="required" />
                                 </div>
                                 <div>
-<<<<<<< HEAD
-                                    <button class="btn btn-primary btn-block border-0 py-3" type="submit">Subscribe Now</button>
-=======
                                     <button class="btn btn-primary btn-block border-0 py-3" type="submit">Đăng ký ngay</button>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
                                 </div>
                             </form>
                         </div>
@@ -398,6 +378,10 @@
     </div>
     <!-- Footer End -->
 
+    <div class="toast-message">
+        <p class="text-light p-3">Vui lòng thêm sản phẩm vào giỏ hàng của bạn</p>
+    </div>
+
 
     <!-- Back to Top -->
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
@@ -406,28 +390,17 @@
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-<<<<<<< HEAD
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.js"></script>
-    <script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
-
-
-
-    <!-- Contact Javascript File -->
-    <script src="mail/jqBootstrapValidation.min.js"></script>
-    <script src="mail/contact.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
-=======
     <script src="./assets/lib/easing/easing.min.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.js"></script>
     <script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
 
     <!-- Template Javascript -->
     <script src="./assets/js/main.js"></script>
->>>>>>> e4038046f2ba56890c61ab2348ad463958712a6a
+
+    <script>
+        //datatables cart
+        $('#table-cart').DataTable({});
+    </script>
 </body>
 
 </html>
